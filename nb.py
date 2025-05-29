@@ -1,6 +1,35 @@
 import math
 
 def naive_bayes(email, spam_word_counts, ham_word_counts, n_spam, n_ham, vocab):
+    """
+    Predict whether an email is spam or not using a Naive Bayes classifier.
+
+    Parameters:
+    ----------
+    email_words : list of str
+        A list of words from the email after preprocessing (e.g., tokenization, stop-word removal).
+    
+    spam_word_freqs : dict
+        A dictionary where keys are words and values are their frequency in spam emails.
+
+    ham_word_freqs : dict
+        A dictionary where keys are words and values are their frequency in non-spam (ham) emails.
+
+    spam_prior : float
+        Prior probability of an email being spam (P(spam)).
+
+    ham_prior : float
+        Prior probability of an email being ham (P(ham)).
+
+    vocabulary_size : int
+        Total number of unique words in the vocabulary (used for Laplace smoothing).
+
+    Returns:
+    -------
+    str
+        The predicted label: either "spam" or "ham".
+
+    """
     n_total = n_spam + n_ham
 
     p_spam = n_spam/n_total
