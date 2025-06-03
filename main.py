@@ -2,7 +2,7 @@ import json
 import argparse
 import sys
 from typing import Any, Optional
-from tokens import tokenize
+from tokens import tokenize, get_sender
 from pathlib import Path
 from collections import defaultdict
 from nb import naive_bayes
@@ -101,15 +101,22 @@ def predict(email_path: Path, prefix: str) -> None:
         negative_data = json.load(f)
 
     with open(email_path, encoding="latin-1") as f:
+        contents = f.read()
         email_words = tokenize(f.read())
+        
 
-    result = naive_bayes(
-        email_words,
-        positive_data["counts"],
-        negative_data["counts"],
-        positive_data["amt"],
-        negative_data["amt"],
-    )
+    with open("whitelist.txt", "r") as f:
+        whitelist_emails = []
+        whitelist_emails = [email.strip() for email in f.readlines()]
+
+    if get_sender(contents) not in whitelist_emails:
+        result = naive_bayes(
+            email_words,
+            positive_data["counts"],
+            negative_data["counts"],
+            positive_data["amt"],
+            negative_data["amt"],
+        )
 
     print(f"Naive bayes classified as: {'positive' if result else 'negative'}")
 
