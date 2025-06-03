@@ -3,35 +3,39 @@ import math
 
 def naive_bayes(
     email: list[str],
-    spam_word_counts: dict[str, int],
-    ham_word_counts: dict[str, int],
-    n_spam: int,
-    n_ham: int,
-) -> str:
+    positive_word_counts: dict[str, int],
+    negative_word_counts: dict[str, int],
+    n_positive: int,
+    n_negative: int,
+) -> bool:
     """
-    Predict whether an email is spam or not using a Naive Bayes classifier.
+    Predict whether an email is positive or negative using a Naive Bayes classifier.
 
-    Returns the predicted label: either "spam" or "ham".
+    Returns a boolean indicating if it is positve (True).
     """
-    n_total = n_spam + n_ham
+    n_total = n_positive + n_negative
 
-    p_spam = n_spam / n_total
-    p_ham = n_ham / n_total
+    p_positive = n_positive / n_total
+    p_negative = n_negative / n_total
 
-    spam_total_words = sum(spam_word_counts.values())
-    ham_total_words = sum(ham_word_counts.values())
-    vocab_size = len(set(spam_word_counts) | set(ham_word_counts))
+    positive_total_words = sum(positive_word_counts.values())
+    negative_total_words = sum(negative_word_counts.values())
+    vocab_size = len(set(positive_word_counts) | set(negative_word_counts))
 
     # use log here
-    prob_spam = math.log(p_spam)
-    prob_ham = math.log(p_ham)
+    prob_positive = math.log(p_positive)
+    prob_negative = math.log(p_negative)
 
     for word in email:
         # Laplace Smoothing
-        spam_word_freq = spam_word_counts.get(word, 0) + 1
-        ham_word_freq = ham_word_counts.get(word, 0) + 1
+        positive_word_freq = positive_word_counts.get(word, 0) + 1
+        negative_word_freq = negative_word_counts.get(word, 0) + 1
 
-        prob_spam += math.log(spam_word_freq / (spam_total_words + vocab_size))
-        prob_ham += math.log(ham_word_freq / (ham_total_words + vocab_size))
+        prob_positive += math.log(
+            positive_word_freq / (positive_total_words + vocab_size)
+        )
+        prob_negative += math.log(
+            negative_word_freq / (negative_total_words + vocab_size)
+        )
 
-    return "spam" if prob_spam > prob_ham else "ham"
+    return prob_positive > prob_negative

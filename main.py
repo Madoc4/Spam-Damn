@@ -8,7 +8,9 @@ from nb import naive_bayes
 
 def main():
     if len(sys.argv) < 2:
-        print("Usage: python main.py train <spam_dir> <ham_dir> <model_prefix>")
+        print(
+            "Usage: python main.py train <positive_dir> <negative_dir> <model_prefix>"
+        )
         print("   or: python main.py predict <model_prefix> <email_file>")
         sys.exit(1)
 
@@ -16,12 +18,14 @@ def main():
 
     if cmd == "train":
         if len(sys.argv) != 5:
-            print("Usage: python main.py train <spam_dir> <ham_dir> <model_prefix>")
+            print(
+                "Usage: python main.py train <positive_dir> <negative_dir> <model_prefix>"
+            )
             sys.exit(1)
-        spam_dir = sys.argv[2]
-        ham_dir = sys.argv[3]
+        positive_dir = sys.argv[2]
+        negative_dir = sys.argv[3]
         prefix = sys.argv[4]
-        train(Path(spam_dir), Path(ham_dir), prefix)
+        train(Path(positive_dir), Path(negative_dir), prefix)
 
     elif cmd == "predict":
         if len(sys.argv) != 4:
@@ -35,40 +39,41 @@ def main():
         print("Use 'train' or 'predict'.")
 
 
-def train(spam_dir: Path, ham_dir: Path, prefix: str) -> None:
-    spam_counts = count_dir(spam_dir)
-    n_spam = len([f for f in spam_dir.iterdir() if f.is_file()])
-    ham_counts = count_dir(ham_dir)
-    n_ham = len([f for f in ham_dir.iterdir() if f.is_file()])
+def train(positive_dir: Path, negative_dir: Path, prefix: str) -> None:
+    positive_counts = count_dir(positive_dir)
+    n_positive = len([f for f in positive_dir.iterdir() if f.is_file()])
+    negative_counts = count_dir(negative_dir)
+    n_negative = len([f for f in negative_dir.iterdir() if f.is_file()])
 
-    spam_data = {"counts": spam_counts, "amt": n_spam}
-    ham_data = {"counts": ham_counts, "amt": n_ham}
+    positive_data = {"counts": positive_counts, "amt": n_positive}
+    negative_data = {"counts": negative_counts, "amt": n_negative}
 
-    with open(f"{prefix}_spam_counts.json", "w") as f:
-        json.dump(spam_data, f)
-    with open(f"{prefix}_ham_counts.json", "w") as f:
-        json.dump(ham_data, f)
+    with open(f"{prefix}_positive_counts.json", "w") as f:
+        json.dump(positive_data, f)
+    with open(f"{prefix}_negative_counts.json", "w") as f:
+        json.dump(negative_data, f)
 
     print("Training finished!")
 
 
 def predict(email_path: Path, prefix: str) -> None:
-    with open(f"{prefix}_spam_counts.json") as f:
-        spam_data = json.load(f)
-    with open(f"{prefix}_ham_counts.json") as f:
-        ham_data = json.load(f)
+    with open(f"{prefix}_positive_counts.json") as f:
+        positive_data = json.load(f)
+    with open(f"{prefix}_negative_counts.json") as f:
+        negative_data = json.load(f)
 
     with open(email_path, encoding="latin-1") as f:
         email_words = tokenize(f.read())
 
     result = naive_bayes(
         email_words,
-        spam_data["counts"],
-        ham_data["counts"],
-        spam_data["amt"],
-        ham_data["amt"],
+        positive_data["counts"],
+        negative_data["counts"],
+        positive_data["amt"],
+        negative_data["amt"],
     )
-    print(f"Naive bayes classified as: {result}")
+
+    print(f"Naive bayes classified as: {'positive' if result else 'negative'}")
 
 
 def count_dir(dir_path: Path) -> defaultdict[str, int]:
