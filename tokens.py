@@ -1,4 +1,4 @@
-from typing import Tuple
+from typing import Optional, Tuple
 from bs4 import BeautifulSoup
 from nltk import word_tokenize
 from nltk.corpus import stopwords
@@ -20,6 +20,14 @@ def is_html(headers: list[str]) -> bool:
             return "text/html" in header
 
     return False
+
+
+def get_sender(contents: str) -> Optional[str]:
+    headers, _ = split_headers(contents.splitlines())
+    for header in headers:
+        if header.startswith("From:"):
+            return header[6:]
+    return None
 
 
 def tokenize(contents: str) -> list[str]:
