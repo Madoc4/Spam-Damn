@@ -102,14 +102,17 @@ def predict(email_path: Path, prefix: str) -> None:
 
     with open(email_path, encoding="latin-1") as f:
         contents = f.read()
-        email_words = tokenize(f.read())
-        
+        email_words = tokenize(contents)
 
-    with open("whitelist.txt", "r") as f:
-        whitelist_emails = []
-        whitelist_emails = [email.strip() for email in f.readlines()]
+    whitelist_path = Path("whitelist.txt")
+    whitelist_emails = []
+    if whitelist_path.exists():
+        with open("whitelist.txt") as f:
+            whitelist_emails = [sender.strip() for sender in f.readlines()]
 
-    if get_sender(contents) not in whitelist_emails:
+    if get_sender(contents) in whitelist_emails:
+        result = False
+    else:
         result = naive_bayes(
             email_words,
             positive_data["counts"],
