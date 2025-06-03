@@ -30,6 +30,11 @@ def main():
     predict_parser.add_argument("prefix", help="Prefix of the trained model to use")
     predict_parser.add_argument("file", help="File to make predictions on")
 
+    whitelist_parser = subparsers.add_parser(
+        "whitelist", help="Whitelist a given sender address"
+    )
+    whitelist_parser.add_argument("address", help="The address to whitelist")
+
     args = parser.parse_args()
 
     if args.command == "train":
@@ -42,8 +47,8 @@ def main():
     elif args.command == "predict":
         predict(Path(args.file), args.prefix)
 
-    else:
-        print("Use 'train' or 'predict'.")
+    elif args.command == "whitelist":
+        whitelist(args.address)
 
 
 def train(
@@ -122,6 +127,15 @@ def predict(email_path: Path, prefix: str) -> None:
         )
 
     print(f"Naive bayes classified as: {'positive' if result else 'negative'}")
+
+
+def whitelist(address: str) -> None:
+    whitelist_path = Path("whitelist.txt")
+    if not whitelist_path.exists():
+        whitelist_path.write_text(address)
+        return
+    with open(whitelist_path, "a") as f:
+        f.write("\n" + address)
 
 
 def count_dir(dir_path: Path) -> defaultdict[str, int]:
